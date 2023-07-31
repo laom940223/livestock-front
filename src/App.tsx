@@ -7,6 +7,8 @@ import { ProtectedRoute } from './components/protectedRoute'
 import SignIn from './pages/login'
 import SignUp from './pages/sigup'
 import { Layout } from './pages/layout'
+import { Dashboard } from './pages/dashboard'
+import { FarmDetail } from './pages/farm-detail'
 
 function App() {
   
@@ -20,8 +22,16 @@ function App() {
                   }
                 
                 >
-                   <Route path='' element={<Layout/>}  /> 
+                   <Route path='' element={<Layout/>} >
 
+                      <Route path='' element={<Dashboard/>}/>
+                      <Route path='/farms/:id'  element={<FarmDetail/>}/>
+
+                      
+
+
+                      <Route path="*" element={<> Not Found</>} />
+                   </Route>
                 </Route>
                   
 
