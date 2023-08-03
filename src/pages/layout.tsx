@@ -33,7 +33,7 @@ import { TOKEN_KEY } from '../components/protectedRoute';
 import { Link as RouterLink, Outlet } from 'react-router-dom';
 import { Link } from '@mui/material';
 import { BASE_URL, ServerResponse, User } from '../utils/const';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 const drawerWidth = 240;
 
@@ -116,7 +116,8 @@ const queryClient = useQueryClient()
   const [open, setOpen] = React.useState(false);
 
 
-  const {data, isLoading} = useQuery<ServerResponse<User>>(["me"], async()=>{
+  const {data, isLoading, isError , error} = useQuery<ServerResponse<User>, AxiosError<ServerResponse<unknown>>>(["me"], async()=>{
+
 
 
         const response= await  axios.get(BASE_URL+"/me", {
@@ -126,6 +127,9 @@ const queryClient = useQueryClient()
         })
 
         return response.data
+  }, {
+
+    
   })
 
 
@@ -159,7 +163,24 @@ const queryClient = useQueryClient()
   
   if(isLoading) return <CircularProgress />
 
+  if(isError){
 
+
+    if(error.response){
+
+         if(error.response.data.errors[0].message.includes("JWT")){
+
+          localStorage.removeItem(TOKEN_KEY)
+          queryClient.invalidateQueries(["auth"])
+         }
+
+        
+
+
+    }
+
+    return "Something went wrong"
+  }
   
 
   return (

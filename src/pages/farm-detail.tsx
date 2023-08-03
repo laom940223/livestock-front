@@ -1,10 +1,12 @@
 import { useQuery } from "@tanstack/react-query"
-import {  useParams } from "react-router-dom"
+import { useState } from "react"
+import {  Link, useParams } from "react-router-dom"
 import { BASE_URL, ServerResponse } from "../utils/const"
 import axios from "axios"
 import { getTokenString } from "../utils/token-utils"
 import { Box, Grid, Typography, Button, CircularProgress as Progress } from "@mui/material"
 import { AnimalsTable } from "../components/animals-table"
+import { AddAnimal } from "../components/add-animal"
 
 
 export type Farm = {
@@ -39,10 +41,13 @@ export type Animal = {
 
 
 
+
 export const FarmDetail =()=>{
 
     const {id} = useParams()
-    
+    const [openAnimal, setOpenAnimal] = useState(false);
+    const handleOpen = () => setOpenAnimal(true);
+    const handleClose = () => setOpenAnimal(false);
 
     const getFarmDetails = async (): Promise<Farm>=>{
         const {data}  = await axios.get<ServerResponse<Farm>>(BASE_URL+`/farms/${id}`, {
@@ -52,23 +57,24 @@ export const FarmDetail =()=>{
         })
        return data.data
     }
-
+    
 
     const { data:farm, isLoading, isError} = useQuery<Farm>(["farm"], getFarmDetails)
 
 
 
     if(isLoading) return<Progress/>
-    
-
     if(isError) return <>Something went wrong</>
 
-    console.log(farm)
+    
 
 
     return (
 
         <Grid container >
+            <Grid xs={12} sx={{justifyContent:"flex-start", display:"flex"}}> 
+                <Link to={"/"}> Go back </Link>
+            </Grid>
             <Grid xs={12} sx={{display:"flex"}}>
                 <Box sx={{width:"100%", display:"flex", flexDirection:"column" }}>
                     <Typography variant="h4"> Farm Name: {farm.name} </Typography>
@@ -84,7 +90,8 @@ export const FarmDetail =()=>{
                     {  farm.animals.length>0 ? <AnimalsTable animals={farm.animals} /> : <Typography>You don't have any animals addes try adding some to see the data</Typography>}
                 </Box>
                 <Box sx={{width:"100%", marginTop:4, marginBottom:2}}   >
-                    <Button variant="contained"> Add Animal</Button>
+                    <Button onClick={handleOpen}  variant="contained"> Add Animal</Button>
+                    <AddAnimal animals={farm.animals} farmId={+id!} onClose={handleClose} isOpen={openAnimal}/>
                 </Box>
             </Grid>
         </Grid>

@@ -24,8 +24,7 @@ export const ProtectedRoute = ()=>{
 
     if(isLoading) return <>loading</>
 
-    console.log(data)
-
+    
 
     if(!data)  return <Navigate to={"/login"} state={{ from: location }} />
 

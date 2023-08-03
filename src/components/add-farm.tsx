@@ -26,8 +26,20 @@ const style = {
   const schema = z.object({
     name: z.string().min(4, { message: 'This field is required' }),
     address: z.string().min(8, { message: 'This field is required' }),
+   
+    
   });
 
+
+
+
+  // private String name;
+  // @JsonFormat( pattern = "yyyy-MM-dd")
+  // private String dob;
+  // private Long breed_id;
+  // private Long father_id;
+  // private Long mother_id;
+  // private Long farm_id;
 
 
 export const AddFarm = ({ open, onClose}:{ open:boolean, onClose:()=>void })=>{
@@ -136,6 +148,8 @@ export const AddFarm = ({ open, onClose}:{ open:boolean, onClose:()=>void })=>{
                 helperText={ !!errors["address"] ? errors["address"].message as string : ""  }
               />
               
+              
+
               <Button
                 type="submit"
                 fullWidth
