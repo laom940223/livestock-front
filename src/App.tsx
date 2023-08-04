@@ -9,6 +9,7 @@ import SignUp from './pages/sigup'
 import { Layout } from './pages/layout'
 import { Dashboard } from './pages/dashboard'
 import { FarmDetail } from './pages/farm-detail'
+import { AnimalDetail } from './pages/animal-detail'
 
 function App() {
   
@@ -26,6 +27,7 @@ function App() {
 
                       <Route path='' element={<Dashboard/>}/>
                       <Route path='/farms/:id'  element={<FarmDetail/>}/>
+                      <Route path='/farms/:farmId/animals/:animalId' element={ <AnimalDetail/>}/>
 
                       
 

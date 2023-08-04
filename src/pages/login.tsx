@@ -21,7 +21,7 @@ import { useNavigate, Navigate, Link as NavLink } from 'react-router-dom';
 
 const schema = z.object({
   username: z.string().min(4, { message: 'This field is required' }),
-  password: z.string().min(8, { message: 'Password is required' }),
+  password: z.string().min(8, { message: 'Password must be at least 8 characters' }),
 });
 
 

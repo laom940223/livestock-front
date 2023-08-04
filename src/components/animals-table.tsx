@@ -1,52 +1,166 @@
-
+import {useState, useRef }from 'react'
+import Tooltip from '@mui/material/Tooltip';
+import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton } from "@mui/material";
 import { Animal } from "../pages/farm-detail";
 import { DataGrid, GridColDef  } from '@mui/x-data-grid';
+import DeleteIcon from '@mui/icons-material/Delete';
+import InfoIcon from '@mui/icons-material/Info';
+import React from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import dayjs from "dayjs";
+import  relativeTime  from 'dayjs/plugin/relativeTime'
+import { BASE_URL, ServerResponse } from '../utils/const';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import axios from 'axios';
+import { getTokenString } from '../utils/token-utils';
+import EditIcon from '@mui/icons-material/Edit';
+import { AddAnimal } from './add-animal';
+
+dayjs.extend(relativeTime)
 
 
-const columns: GridColDef<Animal>[] = [
-  { field: 'id', headerName: 'ID', width: 70 },
-  { field: 'name', headerName: 'Name', width: 130 },
-  { field: 'dob', headerName: 'Date of birth', width: 130 },
-  { field: 'breed', headerName: 'Breed', width: 90,
 
-    renderCell: (params=>{
-      return params.value.name
+
+
+export const AnimalsTable = ({farmId: id, openAnimal, onClose} : {farmId: number, openAnimal : boolean, onClose: ()=>void} )=>{
+
+
+  const getFarmAnimals = async (): Promise<Animal[]>=>{
+    const {data}  = await axios.get<ServerResponse<Animal[]>>(BASE_URL+`/animals/farm/${id}`, {
+        headers:{
+            Authorization: getTokenString()
+        }
     })
-  },
+   return data.data
+}
 
-  {
-    field:"sex", headerName:"Sex", width:100
 
-  },
+  const animals = useQuery<Animal[]>(["animals"], getFarmAnimals)
 
-  {
-    field: "actions", headerName:"Actions",
-    renderCell: (params=>{
+  const navigate = useNavigate()
+  const {pathname}  = useLocation()
+  const [open, setOpen] = useState(false)
+  const queryClient = useQueryClient()
+  
+  const handleOpen = (id:number)=>{ 
+  
+    refId.current = id
+      setOpen(true)
+  }
+  const handleClose = ()=>{ 
+    
+    refId.current = null
+      setOpen(false)
+  
+  }
 
-      return <>{`Edit${params.row.id}`} </>
-    })
+  const refId = useRef<number | null>(null)
+
+
+  
+
+  const handleConfirmDelete = ()=>{
+
+
+    if(refId.current){
+      mutate(refId.current)
+    }
+    // console.log("about to mutatehe id: " + refId.current)
+
   }
   
-  
-  ,
-  
-];
+  const { mutate, isLoading  } = useMutation({
+
+      mutationFn: async (id:number)=>{
+          const {  data  } = await axios.delete(BASE_URL+`/animals/${id}`, { headers:{  Authorization: getTokenString() }})
+          return data
+      },
 
 
+      onError: ()=>{
+        console.error("Something went wrong")
+      },
 
-export const AnimalsTable = ({animals} : { animals :Animal[]})=>{
 
+      onSuccess:()=>{  
+        handleClose()
+        queryClient.invalidateQueries(["animals"])
+      }
+
+
+  })
 
    
+  
+
+  const columns = React.useMemo(()=>{
+    return [
+
+      
+      { field: 'id', headerName: 'ID'},
+      { field: 'name', headerName: 'Name' },
+      { field: 'dob', headerName: 'Date of birth'},
+      { field: 'age', headerName: "Age",  renderCell :(params)=>{
+
+          return `${dayjs(params.row.dob).from(dayjs(), true)}`
+      }},
+      { field: 'breed', headerName: 'Breed',
+    
+        renderCell: (params=>{
+          return params.value.name
+        })
+      },
+  
+      {
+        field:"sex", headerName:"Sex"
+    
+      },
+    
+      {
+        field: "actions", headerName:"Actions",
+        renderCell: (params=>{
+    
+          return <>
+
+            <Tooltip title={"Details"}>
+              <IconButton  onClick={()=>{ navigate(`${pathname}/animals/${params.row.id}`)}} aria-label="info" size="small">
+                  <InfoIcon color='primary' fontSize="inherit" />
+              </IconButton>
+            </Tooltip>
+
+            <Tooltip title={"Edit"}>
+              <IconButton  disabled aria-label="delete" size="small" onClick={()=>handleOpen(params.row.id)}>
+                  <EditIcon color={"info"} fontSize="inherit" />
+              </IconButton>
+            </Tooltip>  
+
+            <Tooltip title={"Delete"}>
+              <IconButton   aria-label="delete" size="small" onClick={()=>handleOpen(params.row.id)}>
+                  <DeleteIcon color={"error"} fontSize="inherit" />
+              </IconButton>
+            </Tooltip>  
+            </>
+        })
+      }
+      
+    ] as GridColDef<Animal>[] ;
+  },[navigate, pathname])
+
+
+    if(animals.isLoading) return <CircularProgress/>
+
+    if(animals.isError) return <>Something went wrong</>
+
+
 
     return (
       <div style={{ height: 500, width: '100%' }}>
       
       <DataGrid
-        rows={animals}
+        rows={animals.data}
         columns={columns}
         disableColumnSelector
-      
+        
         
         initialState={{
 
@@ -55,8 +169,34 @@ export const AnimalsTable = ({animals} : { animals :Animal[]})=>{
           },
         }}
         pageSizeOptions={[20, 40]}
-        
+
       />
+
+    <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Are you sure?"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Once you delete this animal you can recover the data
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={()=>{ handleConfirmDelete()}} disabled={isLoading} color="error" > Delete</Button>
+          <Button onClick={handleClose} variant='contained'  autoFocus>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+
+      <AddAnimal animals={animals.data} farmId={+id!} onClose={onClose} isOpen={openAnimal}/>
+
     </div>
 
     )

@@ -57,13 +57,17 @@ export const FarmDetail =()=>{
         })
        return data.data
     }
+
+    
     
 
     const { data:farm, isLoading, isError} = useQuery<Farm>(["farm"], getFarmDetails)
-
+    
 
 
     if(isLoading) return<Progress/>
+
+    
     if(isError) return <>Something went wrong</>
 
     
@@ -77,8 +81,8 @@ export const FarmDetail =()=>{
             </Grid>
             <Grid xs={12} sx={{display:"flex"}}>
                 <Box sx={{width:"100%", display:"flex", flexDirection:"column" }}>
-                    <Typography variant="h4"> Farm Name: {farm.name} </Typography>
-                    <Typography variant="h5" > Address: {farm.address} </Typography>
+                    <Typography variant="h4"> {farm.name} </Typography>
+                    <Typography variant="h5" >{farm.address} </Typography>
                     
                 </Box>
             </Grid>
@@ -87,11 +91,12 @@ export const FarmDetail =()=>{
                 
                 <Typography variant="h6">Animals</Typography>
                 <Box sx={{width:"100%", marginTop:4, marginBottom:2}}>
-                    {  farm.animals.length>0 ? <AnimalsTable animals={farm.animals} /> : <Typography>You don't have any animals addes try adding some to see the data</Typography>}
+                    
+                             <AnimalsTable farmId={+id!} openAnimal={openAnimal} onClose={handleClose} /> 
+                    
                 </Box>
                 <Box sx={{width:"100%", marginTop:4, marginBottom:2}}   >
                     <Button onClick={handleOpen}  variant="contained"> Add Animal</Button>
-                    <AddAnimal animals={farm.animals} farmId={+id!} onClose={handleClose} isOpen={openAnimal}/>
                 </Box>
             </Grid>
         </Grid>

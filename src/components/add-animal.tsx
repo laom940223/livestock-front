@@ -28,11 +28,11 @@ const style = {
   };
   
   const schema = z.object({
-    name: z.string().min(4, { message: 'This field is required' }),
+    name:       z.string().min(4, { message: 'This field is required' }),
     sex:        z.enum(["MALE", "FEMALE"]),
-    breed:   z.number(),
-    // father_id:  z.number(),
-    mother:  z.number(),
+    breed:      z.number(),
+    father:     z.number().optional(),
+    mother:     z.number().optional(),
     dob:        z.instanceof(dayjs as unknown as typeof Dayjs)
   });
 
@@ -51,7 +51,7 @@ const getBreeds = async ()=>{
 }
 
 
-export const AddAnimal = ({onClose, isOpen, animals ,farmId} : { onClose: ()=>void, animals:Animal[] ,isOpen: boolean, farmId: number})=>{
+export const AddAnimal = ({onClose, isOpen, animals ,farmId } : { onClose: ()=>void, animals:Animal[] ,isOpen: boolean, farmId: number})=>{
 
 
   const [addMom, setAddMom ]= useState(false)
@@ -69,7 +69,7 @@ export const AddAnimal = ({onClose, isOpen, animals ,farmId} : { onClose: ()=>vo
     const {
         register,
         handleSubmit,  
-      
+
         reset,
         setError,
         control,
@@ -80,7 +80,7 @@ export const AddAnimal = ({onClose, isOpen, animals ,farmId} : { onClose: ()=>vo
       });
 
 
-      const  {mutate } = useMutation<  ServerResponse<Animal>, AxiosError<ServerResponse<unknown>> ,unknown, { name: string, address: string}>({ 
+      const  {mutate, isLoading } = useMutation<  ServerResponse<Animal>, AxiosError<ServerResponse<unknown>> ,unknown, { name: string, address: string}>({ 
        
         mutationFn: async ( variables )=>{
     
@@ -104,12 +104,12 @@ export const AddAnimal = ({onClose, isOpen, animals ,farmId} : { onClose: ()=>vo
   
         onSuccess: (  )=>{
   
-        
+          queryClient.invalidateQueries(["animals"])
           
-          queryClient.invalidateQueries(["farm"])
-          
-          onClose()
+          setAddDad(false)
+          setAddMom(false)
           reset()
+          onClose()
         }
   
       })
@@ -123,9 +123,13 @@ export const AddAnimal = ({onClose, isOpen, animals ,farmId} : { onClose: ()=>vo
         // if(dayjs().isBefore(values.dob)) setError("dob", {message:"You can not select a future date"}, {shouldFocus:true})
 
         const dob = values.dob.format("YYYY-MM-DD")
+       const data=  {name: values.name, dob, breed_id: values.breed, sex: values.sex, farm_id:farmId, mother_id: values.mother, father_id: values.father }
 
-        
-       mutate(  {name: values.name, dob, breed_id: values.breed, sex: values.sex, farm_id:farmId, mom_id: values.mother })
+
+
+      //  console.log(data)
+        mutate(data)
+       
 
 
 
@@ -138,6 +142,7 @@ export const AddAnimal = ({onClose, isOpen, animals ,farmId} : { onClose: ()=>vo
       const females = animals.filter(animal=> animal.sex === "FEMALE")
 
 
+      
       
     
 
@@ -243,8 +248,8 @@ export const AddAnimal = ({onClose, isOpen, animals ,farmId} : { onClose: ()=>vo
                     { females.length> 0 ?
                     
                     <Box sx={{display:"flex" , alignItems:"center", justifyContent:"flex-start", flexWrap:"wrap"} }>
-                    <InputLabel> Add mom?</InputLabel>
-                    <Checkbox name="Add mom"  value={addMom} onChange={onChangeMomSelect} />
+                      <InputLabel> Add mom?</InputLabel>
+                    <Checkbox name="Add mom" checked={addMom} onChange={onChangeMomSelect} />
 
                     {
 
@@ -283,7 +288,7 @@ export const AddAnimal = ({onClose, isOpen, animals ,farmId} : { onClose: ()=>vo
                     
                     <Box sx={{display:"flex" , alignItems:"center", justifyContent:"flex-start", flexWrap:"wrap"} }>
                     <InputLabel> Add dad?</InputLabel>
-                    <Checkbox name="Add dad"  value={addDad} onChange={onChangeDadSelect} />
+                    <Checkbox name="Add dad"  checked={addDad} onChange={onChangeDadSelect} />
 
                     {
 
@@ -302,7 +307,7 @@ export const AddAnimal = ({onClose, isOpen, animals ,farmId} : { onClose: ()=>vo
                                   value={value}
                                   labelId="father_label"
                                   onChange={(e: SelectChangeEvent)=>{ 
-                                      console.log(e.target.value)
+                                      
                                     onChange( e.target.value) }}
                                   >
                                     {males.map( male => <MenuItem key={male.id} value={male.id}>{male.name}</MenuItem> )}
@@ -328,6 +333,7 @@ export const AddAnimal = ({onClose, isOpen, animals ,farmId} : { onClose: ()=>vo
                 fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
+                disabled={isLoading}
               >
                 Add
               </Button>

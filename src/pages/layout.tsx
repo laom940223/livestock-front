@@ -27,13 +27,13 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import Logout from '@mui/icons-material/Logout';
 
-import { CircularProgress, Grid } from '@mui/material';
+import { Alert, CircularProgress, Grid, Snackbar } from '@mui/material';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { TOKEN_KEY } from '../components/protectedRoute';
 import { Link as RouterLink, Outlet } from 'react-router-dom';
 import { Link } from '@mui/material';
 import { BASE_URL, ServerResponse, User } from '../utils/const';
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, isAxiosError } from 'axios';
 
 const drawerWidth = 240;
 
@@ -116,9 +116,7 @@ const queryClient = useQueryClient()
   const [open, setOpen] = React.useState(false);
 
 
-  const {data, isLoading, isError , error} = useQuery<ServerResponse<User>, AxiosError<ServerResponse<unknown>>>(["me"], async()=>{
-
-
+  const {data, isLoading, isError , error, failureReason} = useQuery<ServerResponse<User>, AxiosError<ServerResponse<unknown>>>(["me"], async()=>{
 
         const response= await  axios.get(BASE_URL+"/me", {
                 headers:{
@@ -160,12 +158,45 @@ const queryClient = useQueryClient()
 
 
   
+
+    
+
   
-  if(isLoading) return <CircularProgress />
+  if(isLoading) {
+    
+      
+    
+      return (
+        <>
+
+          {failureReason?
+            <Snackbar 
+                open={!!failureReason}  
+                autoHideDuration={6000}
+                anchorOrigin={{ vertical:"bottom", horizontal:"right"  }}
+                
+                >
+              <Alert severity="error">{failureReason.message}</Alert>
+            </Snackbar>:
+
+            null}
+          
+          <CircularProgress />
+        </>
+      
+      )
+  
+  
+  }
+
+
+
 
   if(isError){
-
-
+    
+    
+    
+    
     if(error.response){
 
          if(error.response.data.errors[0].message.includes("JWT")){
@@ -173,14 +204,20 @@ const queryClient = useQueryClient()
           localStorage.removeItem(TOKEN_KEY)
           queryClient.invalidateQueries(["auth"])
          }
+    }
 
-        
 
+    if(isAxiosError(error)){
+
+      return("Please check your connection")
 
     }
+    
 
     return "Something went wrong"
   }
+
+  
   
 
   return (
