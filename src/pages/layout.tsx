@@ -311,12 +311,16 @@ const queryClient = useQueryClient()
                         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                  >
 
-                      <MenuItem onClick={handleClose}>
+                      <MenuItem >
                                 {`Hello ${data?.data.username}`}
                         </MenuItem>
 
                         <MenuItem onClick={handleClose}>
-                                <Avatar /> Profile
+                          <Link sx={{color:"MenuText", textDecoration:"none"}} component={RouterLink} to="/profile">
+                            <Box sx={{display:"flex", alignItems:"center"}}>
+                              <Avatar /> <span>Profile</span>
+                            </Box>
+                          </Link>
                         </MenuItem>
                         <MenuItem onClick={handleClose}>
                                 <Avatar /> My account
@@ -352,7 +356,7 @@ const queryClient = useQueryClient()
         <List>
           {[{ text: "Home", path:"/"}].map((prop, index) => (
             <ListItem key={prop.text} disablePadding sx={{ display: 'block' }}>
-             <Link component={RouterLink} to={prop.path} >
+             <Link component={RouterLink} sx={{textDecoration:"none"}} to={prop.path} >
               <ListItemButton
                 
                 sx={{

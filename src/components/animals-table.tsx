@@ -5,7 +5,7 @@ import { Animal } from "../pages/farm-detail";
 import { DataGrid, GridColDef  } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
-import React from "react";
+
 import { useLocation, useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import  relativeTime  from 'dayjs/plugin/relativeTime'
@@ -15,6 +15,7 @@ import axios from 'axios';
 import { getTokenString } from '../utils/token-utils';
 import EditIcon from '@mui/icons-material/Edit';
 import { AddAnimal } from './add-animal';
+import { EditAnimal } from './edit-animal';
 
 dayjs.extend(relativeTime)
 
@@ -40,18 +41,28 @@ export const AnimalsTable = ({farmId: id, openAnimal, onClose} : {farmId: number
   const navigate = useNavigate()
   const {pathname}  = useLocation()
   const [open, setOpen] = useState(false)
+  const [edit, setEdit] = useState(false)
   const queryClient = useQueryClient()
   
-  const handleOpen = (id:number)=>{ 
+
+  const handleEdit = (id:number)=>{
+    refId.current = id
+    setEdit(true)
+  }
   
+  const handleCloseEdit = ()=>{ 
+    refId.current = null
+      setEdit(false)
+  }
+
+
+  const handleOpen = (id:number)=>{ 
     refId.current = id
       setOpen(true)
   }
   const handleClose = ()=>{ 
-    
     refId.current = null
       setOpen(false)
-  
   }
 
   const refId = useRef<number | null>(null)
@@ -93,8 +104,8 @@ export const AnimalsTable = ({farmId: id, openAnimal, onClose} : {farmId: number
    
   
 
-  const columns = React.useMemo(()=>{
-    return [
+  const columns = 
+    [
 
       
       { field: 'id', headerName: 'ID'},
@@ -113,9 +124,18 @@ export const AnimalsTable = ({farmId: id, openAnimal, onClose} : {farmId: number
   
       {
         field:"sex", headerName:"Sex"
-    
+
       },
-    
+      
+      {
+         headerName:"In farm", renderCell:(params)=>{
+
+          
+          return <>{params.row.inFarm ? "Yes": "No"}</>
+        }
+
+      },
+
       {
         field: "actions", headerName:"Actions",
         renderCell: (params=>{
@@ -129,7 +149,7 @@ export const AnimalsTable = ({farmId: id, openAnimal, onClose} : {farmId: number
             </Tooltip>
 
             <Tooltip title={"Edit"}>
-              <IconButton  disabled aria-label="delete" size="small" onClick={()=>handleOpen(params.row.id)}>
+              <IconButton   aria-label="delete" size="small" onClick={()=>handleEdit(params.row.id)}>
                   <EditIcon color={"info"} fontSize="inherit" />
               </IconButton>
             </Tooltip>  
@@ -144,7 +164,7 @@ export const AnimalsTable = ({farmId: id, openAnimal, onClose} : {farmId: number
       }
       
     ] as GridColDef<Animal>[] ;
-  },[navigate, pathname])
+  // },[navigate, pathname])
 
 
     if(animals.isLoading) return <CircularProgress/>
@@ -196,7 +216,10 @@ export const AnimalsTable = ({farmId: id, openAnimal, onClose} : {farmId: number
 
 
       <AddAnimal animals={animals.data} farmId={+id!} onClose={onClose} isOpen={openAnimal}/>
-
+      {
+          refId.current ? <EditAnimal toUpdate={refId.current} animals={animals.data} farmId={+id!} onClose={handleCloseEdit} isOpen={edit}/> : null
+      }
+        
     </div>
 
     )

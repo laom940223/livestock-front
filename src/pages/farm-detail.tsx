@@ -6,7 +6,7 @@ import axios from "axios"
 import { getTokenString } from "../utils/token-utils"
 import { Box, Grid, Typography, Button, CircularProgress as Progress } from "@mui/material"
 import { AnimalsTable } from "../components/animals-table"
-import { AddAnimal } from "../components/add-animal"
+
 
 
 export type Farm = {
@@ -31,10 +31,13 @@ export type Animal = {
     name:string,
     dob: string ,
     sex: "FEMALE" | "MALE",
-    mother: number,
-    father: number,
+    mother?: Animal,
+    father?: Animal,
     breed: AnimalBreed,
     inFarm: boolean
+
+    father_id: number,
+    mother_id: number,
 	
 }
 

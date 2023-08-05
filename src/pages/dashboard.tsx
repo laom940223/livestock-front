@@ -76,14 +76,16 @@ export const Dashboard = ()=>{
 
             <Grid container>
                 <Grid xs={6} sx={{ display:"flex", alignItems:"center", justifyContent:"space-evenly", flexWrap:"wrap" }}>
-                    <Box sx={{ width:"100%", marginBottom:1}}>
-                        <Typography  variant="h4"> My Farms</Typography>
+                    <Box sx={{ width:"100%", marginBottom:1, display:"flex", justifyContent:"flex-start"}}>
+                        
+                        <Typography   variant="h4"> My Farms</Typography>
                     </Box>
                     <Box sx={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-around", flexWrap:"wrap" }}>
                         {farms}
+                        
                         {  
                                     
-                                   farms.length < 2 ? <> <Button onClick={handleOpen}>Add a farm</Button>  
+                                   farms.length < 1 ? <> <Button onClick={handleOpen}>Add a farm</Button>  1
                                                             <AddFarm open={openFarm} onClose={handleClose} />
                                                         </>
                                     : null
